@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zihan Kalisma — Crypto Portfolio 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060810;
+    --surface: #0c1120;
+    --surface2: #111827;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00f5c4;
+    --accent2: #7b61ff;
+    --accent3: #ff6b35;
+    --text: #e8eaf0;
+    --muted: #5a6480;
+    --faint: #1a2035;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── GRID LINES ── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,196,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,196,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.15;
+  }
+  .orb-1 { width: 500px; height: 500px; background: var(--accent2); top: -100px; right: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: var(--accent); bottom: 200px; left: -150px; opacity: 0.1; }
+
+  /* ── LAYOUT ── */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 80px 0 60px;
+    position: relative;
+  }
+
+  .tag-line {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.1s forwards;
+  }
+
+  .name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 8vw, 88px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: #fff;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+
+  .name span {
+    display: block;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-meta {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.35s forwards;
+  }
+
+  .badge {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .badge-outline {
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .badge-accent {
+    background: rgba(0,245,196,0.1);
+    border: 1px solid rgba(0,245,196,0.25);
+    color: var(--accent);
+  }
+
+  .header-desc {
+    margin-top: 24px;
+    max-width: 480px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.45s forwards;
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 64px 0 36px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .section-divider.visible { opacity: 1; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-num {
+    font-size: 10px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    opacity: 0.5;
+  }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .about-cell {
+    background: var(--surface);
+    padding: 28px;
+    transition: background 0.2s;
+  }
+
+  .about-cell:hover { background: var(--surface2); }
+
+  .about-cell.full { grid-column: 1 / -1; }
+
+  .cell-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .cell-body {
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .cell-body p { color: var(--muted); }
+
+  /* ── SKILLS ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .skill-card {
+    background: var(--surface);
+    padding: 28px;
+    transition: background 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 0;
+    background: var(--accent);
+    transition: height 0.3s ease;
+  }
+
+  .skill-card:hover::before { height: 100%; }
+  .skill-card:hover { background: var(--surface2); }
+
+  .skill-icon {
+    font-size: 22px;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .skill-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .skill-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .skill-items li {
+    font-size: 12px;
+    color: var(--muted);
+    padding-left: 12px;
+    position: relative;
+  }
+
+  .skill-items li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  /* ── EXPERIENCE ── */
+  .exp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .exp-item {
+    background: var(--surface);
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .exp-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 60%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .exp-item:hover::after { transform: scaleX(1); }
+  .exp-item:hover { background: var(--surface2); }
+
+  .exp-period {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    padding-top: 2px;
+    font-family: 'DM Mono', monospace;
+    font-style: italic;
+  }
+
+  .exp-right {}
+
+  .exp-company {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .exp-role {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .exp-desc {
+    font-size: 13px;
+    color: #6b7a99;
+    line-height: 1.75;
+    margin-bottom: 16px;
+  }
+
+  .exp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .exp-tag {
+    font-size: 10px;
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 1px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .exp-item:hover .exp-tag {
+    border-color: rgba(0,245,196,0.2);
+    color: var(--accent);
+  }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    margin-top: 64px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .stat-item { }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-value span { color: var(--accent); }
+
+  /* ── CONNECT ── */
+  .connect-block {
+    margin-top: 64px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 52px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .connect-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 200px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .connect-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+  }
+
+  .connect-sub {
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 380px;
+    margin: 0 auto 36px;
+  }
+
+  .connect-links {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .link-btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  .link-btn-primary:hover {
+    background: #00ddb0;
+    transform: translateY(-1px);
+  }
+
+  .link-btn-ghost {
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .link-btn-ghost:hover {
+    border-color: rgba(0,245,196,0.3);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 80px;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-text {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-flag {
+    font-size: 20px;
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 48px 0;
+    padding: 10px 0;
+    background: var(--surface);
+  }
+
+  .ticker-inner {
+    display: flex;
+    gap: 48px;
+    width: max-content;
+    animation: ticker 30s linear infinite;
+  }
+
+  .ticker-item {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .ticker-item span { color: var(--accent); margin-right: 12px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .about-grid,
+    .skills-grid { grid-template-columns: 1fr; }
+    .exp-item { grid-template-columns: 1fr; gap: 8px; }
+    .status-bar { grid-template-columns: 1fr; }
+    .connect-links { flex-direction: column; align-items: stretch; }
+    .link-btn { justify-content: center; }
+    footer { flex-direction: column; text-align: center; }
+  }
+
+  /* ── CURSOR DOT ── */
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--accent);
+    animation: blink 1.2s step-end infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="tag-line">// Crypto Portfolio · 2026</div>
+    <h1 class="name">
+      Zihan<br>
+      <span>Kalisma<span class="cursor"></span></span>
+    </h1>
+    <div class="header-meta">
+      <span class="badge badge-accent">Co-Founder · Turbo Airdrop</span>
+      <span class="badge badge-outline">Ambassador</span>
+      <span class="badge badge-outline">Speaker</span>
+      <span class="badge badge-outline">Community Lead</span>
+      <span class="badge badge-outline">🇮🇩 Indonesia</span>
+    </div>
+    <p class="header-desc">
+      Building bridges between crypto projects and communities — online and offline, in English and Bahasa Indonesia.
+    </p>
+  </header>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <div class="ticker-item"><span>▸</span>NodeOps Ambassador</div>
+      <div class="ticker-item"><span>▸</span>QuackAi Community Builder</div>
+      <div class="ticker-item"><span>▸</span>CreatorX Ambassador</div>
+      <div class="ticker-item"><span>▸</span>Nuvia Finance Moderator</div>
+      <div class="ticker-item"><span>▸</span>AMA Host · X (Twitter)</div>
+      <div class="ticker-item"><span>▸</span>Web3 · DeFi · SocialFi</div>
+      <div class="ticker-item"><span>▸</span>SEA Market Connector</div>
+      <div class="ticker-item"><span>▸</span>English · Bahasa Indonesia</div>
+      <!-- duplicate for seamless loop -->
+      <div class="ticker-item"><span>▸</span>NodeOps Ambassador</div>
+      <div class="ticker-item"><span>▸</span>QuackAi Community Builder</div>
+      <div class="ticker-item"><span>▸</span>CreatorX Ambassador</div>
+      <div class="ticker-item"><span>▸</span>Nuvia Finance Moderator</div>
+      <div class="ticker-item"><span>▸</span>AMA Host · X (Twitter)</div>
+      <div class="ticker-item"><span>▸</span>Web3 · DeFi · SocialFi</div>
+      <div class="ticker-item"><span>▸</span>SEA Market Connector</div>
+      <div class="ticker-item"><span>▸</span>English · Bahasa Indonesia</div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="section-divider reveal">
+    <span class="section-num">01</span>
+    <div class="divider-line"></div>
+    <span class="section-label">About</span>
+  </div>
+
+  <div class="about-grid reveal">
+    <div class="about-cell full">
+      <div class="cell-label">Overview</div>
+      <div class="cell-body">
+        <p>Crypto-native builder and community leader from Indonesia. Co-Founder of <strong style="color:#fff">Turbo Airdrop</strong>, a Telegram community dedicated to Web3 alpha and airdrop hunting. Deeply bullish on DeFi and SocialFi, passionate about connecting projects with real communities — from X AMAs to Telegram moderation to pitching product knowledge to new adopters.</p>
+      </div>
+    </div>
+    <div class="about-cell">
+      <div class="cell-label">Languages</div>
+      <div class="cell-body">
+        <p>English (Fluent)<br>Bahasa Indonesia (Native)</p>
+      </div>
+    </div>
+    <div class="about-cell">
+      <div class="cell-label">Available For</div>
+      <div class="cell-body">
+        <p>Ambassador · Speaker<br>AMA Host · Moderator</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="section-divider reveal">
+    <span class="section-num">02</span>
+    <div class="divider-line"></div>
+    <span class="section-label">Skills & Expertise</span>
+  </div>
+
+  <div class="skills-grid reveal">
+    <div class="skill-card">
+      <span class="skill-icon">🎙️</span>
+      <div class="skill-title">Public Speaking</div>
+      <ul class="skill-items">
+        <li>AMA hosting on X (Twitter)</li>
+        <li>Telegram AMA moderation</li>
+        <li>Product pitching to new adopters</li>
+      </ul>
+    </div>
+    <div class="skill-card">
+      <span class="skill-icon">🌐</span>
+      <div class="skill-title">Community Management</div>
+      <ul class="skill-items">
+        <li>Telegram group ownership</li>
+        <li>Audience growth & retention</li>
+        <li>Ambassador program coordination</li>
+        <li>Moderator leadership</li>
+      </ul>
+    </div>
+    <div class="skill-card">
+      <span class="skill-icon">₿</span>
+      <div class="skill-title">Crypto & Web3</div>
+      <ul class="skill-items">
+        <li>Airdrop strategy & curation</li>
+        <li>DeFi & SocialFi knowledge</li>
+        <li>Project evaluation & review</li>
+        <li>Product knowledge pitching</li>
+      </ul>
+    </div>
+    <div class="skill-card">
+      <span class="skill-icon">💬</span>
+      <div class="skill-title">Communication</div>
+      <ul class="skill-items">
+        <li>English (fluent)</li>
+        <li>Indonesian / Bahasa (native)</li>
+        <li>Content creation for crypto</li>
+        <li>SEA market bridging</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <div class="section-divider reveal">
+    <span class="section-num">03</span>
+    <div class="divider-line"></div>
+    <span class="section-label">Work Experience</span>
+  </div>
+
+  <div class="exp-list reveal">
+
+    <div class="exp-item">
+      <div class="exp-period">2025 — Present</div>
+      <div class="exp-right">
+        <div class="exp-company">Turbo Airdrop</div>
+        <div class="exp-role">Co-Founder & Community Lead</div>
+        <div class="exp-desc">Co-founded and leads Turbo Airdrop, a Telegram-based crypto community providing alpha calls, airdrop guides, DeFi strategies, and Web3 education. Builds and maintains an engaged audience of early-stage crypto enthusiasts in Indonesia and globally.</div>
+        <div class="exp-tags">
+          <span class="exp-tag">Telegram</span>
+          <span class="exp-tag">Airdrop</span>
+          <span class="exp-tag">Community</span>
+          <span class="exp-tag">Web3 Education</span>
+          <span class="exp-tag">DeFi</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-period">2026 — Present</div>
+      <div class="exp-right">
+        <div class="exp-company">CreatorX</div>
+        <div class="exp-role">Ambassador — SocialFi</div>
+        <div class="exp-desc">Official ambassador for CreatorX, a SocialFi project, representing the brand to Indonesian crypto communities through public speaking, product pitches, and community outreach.</div>
+        <div class="exp-tags">
+          <span class="exp-tag">SocialFi</span>
+          <span class="exp-tag">Ambassador</span>
+          <span class="exp-tag">Public Speaking</span>
+          <span class="exp-tag">Product Pitch</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-period">2026 — Present</div>
+      <div class="exp-right">
+        <div class="exp-company">Nuvia Finance</div>
+        <div class="exp-role">Moderator — DeFi</div>
+        <div class="exp-desc">Manages community interactions for Nuvia Finance, a DeFi project, ensuring a positive user experience through active moderation and product education.</div>
+        <div class="exp-tags">
+          <span class="exp-tag">DeFi</span>
+          <span class="exp-tag">Community Engagement</span>
+          <span class="exp-tag">Product Education</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-period">2025 — 2026</div>
+      <div class="exp-right">
+        <div class="exp-company">NodeOps</div>
+        <div class="exp-role">Ambassador — Blockchain Infrastructure</div>
+        <div class="exp-desc">Represented the NodeOps platform, promoting blockchain infrastructure solutions and engaging with the Web3 community as a brand ambassador.</div>
+        <div class="exp-tags">
+          <span class="exp-tag">Blockchain</span>
+          <span class="exp-tag">Infrastructure</span>
+          <span class="exp-tag">Ambassador</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-period">2025 — 2026</div>
+      <div class="exp-right">
+        <div class="exp-company">QuackAi</div>
+        <div class="exp-role">Community Builder — AI Agent</div>
+        <div class="exp-desc">Served as Community Builder for QuackAI, an AI-powered Web3 project, fostering community growth and engagement across key channels.</div>
+        <div class="exp-tags">
+          <span class="exp-tag">AI Agent</span>
+          <span class="exp-tag">Community Development</span>
+          <span class="exp-tag">User Engagement</span>
+          <span class="exp-tag">Ecosystem Growth</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STATS -->
+  <div class="status-bar reveal">
+    <div class="stat-item">
+      <div class="stat-label">Active Roles</div>
+      <div class="stat-value"><span>5</span>+</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Years in Web3</div>
+      <div class="stat-value"><span>3</span>+</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Market Focus</div>
+      <div class="stat-value" style="font-size:14px; padding-top: 6px;">SEA <span>/</span> Global</div>
+    </div>
+  </div>
+
+  <!-- CONNECT -->
+  <div class="connect-block reveal">
+    <div class="connect-headline">Let's Build Together</div>
+    <p class="connect-sub">Looking for an ambassador, community lead, AMA host, or SEA market connector? Reach out.</p>
+    <div class="connect-links">
+      <a href="https://t.me/zihankalisma" class="link-btn link-btn-primary" target="_blank">
+        ✈ Telegram
+      </a>
+      <a href="https://x.com/zihan_kalism" class="link-btn link-btn-ghost" target="_blank">
+        𝕏 Twitter / X
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-text">© 2026 Zihan Kalisma · All rights reserved</span>
+    <span class="footer-flag">🇮🇩</span>
+    <span class="footer-text" style="font-style:italic; color: var(--accent); opacity: 0.6;">// building on-chain, one community at a time</span>
+  </footer>
+
+</div>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('in-view'), i * 80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
